@@ -1,0 +1,136 @@
+body{
+    font-family: Arial, sans-serif;
+}
+
+.registration-form{
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    border-radius: 15px;
+    width: 400px;
+    padding: 15px 20px;
+    position: absolute;
+    left: calc(50%);
+    top: 200px;
+    transform: translate(-50%, -50%);
+    background-color: white;
+}
+
+.reg{
+    display: none;
+}
+
+.registration-header{
+    text-align:center;
+    margin-top: 0;
+    font-weight: normal;
+}
+
+.registration-input{
+    height: 40px;
+    margin-bottom: 18px;
+}
+
+.registration-button{
+    height: 40px;
+    width: 70%;
+    border: 1px solid black;
+    border-radius: 15px;
+    background-color: white;
+    font-size: 16px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.chat-window{
+    margin-left: auto;
+    border: 1px solid black;
+    border-radius: 15px;
+    padding: 15px 20px;
+    width: 500px;
+    max-height: 600px;
+    overflow-y: scroll;
+}
+
+.chat{
+    overflow-y: scroll;
+    padding-right: 10px;
+}
+
+.form-message{
+    width: 100%;
+    display: flex;
+    margin-top: 15px;
+}
+
+.message{
+    height: 40px;
+    width: 95%;
+    border: 1px solid black;
+    border-radius: 15px;
+    font-size: 14px;
+}
+
+.btn-message{
+    border-radius: 15px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.chat-field{
+    position: relative;
+}
+
+.chat-conteiner{
+    margin-bottom: 20px;
+}
+
+.you {
+    text-align: right;
+}
+
+.nick{
+    font-size: 13px;
+    margin-bottom: 5px;
+    width: 100%;
+    float: right;
+}
+
+.chat-conteiner.you .nick{
+    color: red;
+}
+
+.text{
+    display: inline-block;
+    overflow-wrap: break-word;
+}
+
+.chat-participants {
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 15px 0 0 15px;
+    padding: 15px 30px 15px 10px;
+    position: absolute;
+    right: 541px;
+    top: 30px;
+}
+
+.participant {
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.participant::before {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 30px;
+    border: 1px solid black;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.red{
+    color: red;
+}
