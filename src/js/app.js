@@ -1,106 +1,144 @@
+const registrationButton = document.querySelector(".registration-button");
+const chatParticipants = document.querySelector(".chat-participants");
+const registrationForm = document.querySelector(".registration-form");
+const chatField = document.querySelector(".chat-field");
+const btnMessage = document.querySelector(".btn-message");
+const message = document.querySelector(".message");
+const chat = document.querySelector(".chat");
 
-const registrationButton = document.querySelector('.registration-button');
-const chatParticipants = document.querySelector('.chat-participants');
-const registrationForm = document.querySelector('.registration-form');
-const chatField = document.querySelector('.chat-field');
-const btnMessage = document.querySelector('.btn-message');
-const message = document.querySelector('.message');
-const chat = document.querySelector('.chat');
-
-function showChatField () {
-    registrationForm.classList.toggle('reg')
-    chatField.classList.toggle('reg')
+function showChatField() {
+  registrationForm.classList.add("reg");
+  chatField.classList.remove("reg");
 }
 
-function showChatParticipants (participant, user) {
-    if (participant == user){
-        chatParticipants.insertAdjacentHTML('beforeend', `<div class="participant red">You</div>`)
-    } else {
-    chatParticipants.insertAdjacentHTML('beforeend', `<div class="participant">${participant}</div>`)
-    }
+let userNick;
+let userId;
+
+function showChatParticipants(participant, user) {
+  if (participant == user) {
+    chatParticipants.insertAdjacentHTML(
+      "beforeend",
+      `<div class="participant red">You</div>`
+    );
+  } else {
+    chatParticipants.insertAdjacentHTML(
+      "beforeend",
+      `<div class="participant">${participant}</div>`
+    );
+  }
 }
 
 
-const apiURL = 'http://localhost:6060/'
-registrationButton.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const user = document.querySelector('.registration-input');
-    const request = fetch(apiURL + 'registration/', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ user: user.value }),
-    });
-    const result = await request;
-    if (result.status !== 200) {
-        const json = await result.json();
-        console.log(json)
-        alert(json.status)
-        user.value = '';
-        return;
-    }
-    showChatField ()
-    })
+//Проверяем никнейм пользователя при регистрации, если такого нет, то связываем полученный при входе на страницу id и имя пользователя.
+//Отправляем в ws имя и id на сервер.
+//И закрываем поле регистрации
+const apiURL = "http://localhost:6060/";
+registrationButton.addEventListener("click", async (e) => {
+  e.preventDefault();
+  const user = document.querySelector(".registration-input");
+  const request = fetch(apiURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name: user.value, id: userId }),
+  });
+  const result = await request;
+  if (result.status !== 200) {
+    const json = await result.json();
+    console.log(json);
+    alert(json.status);
+    user.value = "";
+    return;
+  }
+  console.log('вы прошли регистрацию');
+  ws.send(JSON.stringify({ registration: {name: user.value, id: userId} }))
+  userNick = user.value;
+  showChatField();
+});
 
+// const eventSource = new EventSource(apiURL + "sse/");
 
-    const eventSource = new EventSource(apiURL + 'sse/');
+// eventSource.addEventListener("open", (e) => {
+//   console.log(e);
+//   console.log("sse open");
+// });
 
-    eventSource.addEventListener('open', (e) => {
-      console.log(e);
-      console.log('sse open');
-    });
-    
-    eventSource.addEventListener('error', (e) => {
-      console.log(e);
-      console.log('sse error');
-    });
-    
-    eventSource.addEventListener('message', (e) => {
-      const user = document.querySelector('.registration-input');
-      const dataServerSentEvents = e.data
-      const parseData = JSON.parse(dataServerSentEvents)
-      chatParticipants.innerHTML = '';
-      console.log('это из sse: ' + user.value);
-      parseData.forEach(element => showChatParticipants(element, user.value));
-      console.log('sse message');
-    });
+// eventSource.addEventListener("error", (e) => {
+//   console.log(e);
+//   console.log("sse error");
+// });
 
+// eventSource.addEventListener("message", (e) => {
+//   const user = document.querySelector(".registration-input");
+//   const dataServerSentEvents = e.data;
+//   const parseData = JSON.parse(dataServerSentEvents);
+//   chatParticipants.innerHTML = "";
+//   console.log(parseData);
+//   parseData.forEach((element) =>
+//     showChatParticipants(element.name, user.value)
+//   );
+//   console.log("sse message");
+// });
 
-const ws = new WebSocket('ws://localhost:6060/ws');
+const ws = new WebSocket("ws://localhost:6060/ws");
 
-btnMessage.addEventListener('click', (e) => {
+btnMessage.addEventListener("click", (e) => {
   e.preventDefault();
   const textMessage = message.value;
-  ws.send(JSON.stringify({nick: userNick, text: textMessage}))
-  message.value = '';
-})
-
-ws.addEventListener('open', (e) => {
-  console.log(e);
-  console.log('ws open');
+  ws.send(JSON.stringify({ chatMessage: { name: userNick, text: textMessage } }));
+  message.value = "";
 });
 
-ws.addEventListener('close', (e) => {
+ws.addEventListener("open", (e) => {
   console.log(e);
-  console.log('ws close');
+  console.log("ws open");
 });
 
-ws.addEventListener('error', (e) => {
+ws.addEventListener("close", (e) => {
   console.log(e);
-  console.log('ws error');
+  console.log("ws close");
 });
 
-ws.addEventListener('message', (e) => {
+ws.addEventListener("error", (e) => {
   console.log(e);
-  const data = JSON.parse(e.data);
-  data.forEach(chatConteiner => {
-    if (chatConteiner.nick == userNick) {
-      chat.insertAdjacentHTML('beforeend', `<div class="chat-conteiner you"><div class="information"><div class="nick">You, ${chatConteiner.date}</div></div><span class="text">${chatConteiner.text}</span></div>`)
-    } else {
-      chat.insertAdjacentHTML('beforeend', `<div class="chat-conteiner"><div class="information"><div class="nick">${chatConteiner.nick}, ${chatConteiner.date}</div></div><span class="text">${chatConteiner.text}</span></div>`)
-    }
-  });
+  console.log("ws error");
+});
+
+//Как только сервер получлит связанные данные о новом пользователе, он добавляет его в БД и вышлит ВСЕМ обновленный список usresList
+//Этот список уходит в поле, где указаны все участники чата
+/*НО ПОЧЕМУ-ТО ЭТОТ ПОЛЬЗОВАТЕЛЬ, КОТОРЫЙ ВХОДИТ В ЧАТ, НЕ ПОЛУЧАЕТ СООБЩЕНИЕ ОТ WS, А ДРУГИЕ УЧАСТНИКИ ПОЛУЧАЮТ*/
+ws.addEventListener("message", (e) => {
+  const parseData = JSON.parse(e.data);
+  console.log(parseData);
   
-  console.log('ws message');
+  if (parseData.connection) {
+    userId = parseData.connection;
+
+  } else if (parseData.usersList) {
+    const user = document.querySelector(".registration-input");
+    console.log('пришли с свервера usersList');
+    console.log(parseData.usersList);
+    chatParticipants.innerHTML = "";
+    parseData.usersList.forEach((element) =>
+      showChatParticipants(element.name, user.value)
+    );
+
+  } else if (parseData.chatMessage) {
+    console.log(parseData.chatMessage);
+    if (parseData.chatMessage.name == userNick) {
+      chat.insertAdjacentHTML(
+        "beforeend",
+        `<div class="chat-conteiner you"><div class="information"><div class="nick">You, ${parseData.chatMessage.date}</div></div><span class="text">${parseData.chatMessage.text}</span></div>`
+      );
+    } else {
+      chat.insertAdjacentHTML(
+        "beforeend",
+        `<div class="chat-conteiner"><div class="information"><div class="nick">${parseData.chatMessage.mane}, ${parseData.chatMessage.date}</div></div><span class="text">${parseData.chatMessage.text}</span></div>`
+      );
+    }
+  }
+
+
+  console.log("ws message");
 });
