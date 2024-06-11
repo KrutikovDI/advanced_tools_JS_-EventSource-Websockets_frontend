@@ -32,7 +32,7 @@ function showChatParticipants(participant, user) {
 //Проверяем никнейм пользователя при регистрации, если такого нет, то связываем полученный при входе на страницу id и имя пользователя.
 //Отправляем в ws имя и id на сервер.
 //И закрываем поле регистрации
-const apiURL = "https://advanced-tools-js-eventsource-websockets.onrender.com";
+const apiURL = "http://localhost:6060/";
 registrationButton.addEventListener("click", async (e) => {
   e.preventDefault();
   const user = document.querySelector(".registration-input");
@@ -81,7 +81,7 @@ registrationButton.addEventListener("click", async (e) => {
 //   console.log("sse message");
 // });
 
-const ws = new WebSocket("https://advanced-tools-js-eventsource-websockets.onrender.com/ws");
+const ws = new WebSocket('ws://localhost:6060/ws');
 
 btnMessage.addEventListener("click", (e) => {
   e.preventDefault();
@@ -112,13 +112,8 @@ ws.addEventListener("message", (e) => {
   const parseData = JSON.parse(e.data);
   console.log(parseData);
   
-  if (parseData.connection) {
-    userId = parseData.connection;
-
-  } else if (parseData.usersList) {
+  if (parseData.usersList) {
     const user = document.querySelector(".registration-input");
-    console.log('пришли с свервера usersList');
-    console.log(parseData.usersList);
     chatParticipants.innerHTML = "";
     parseData.usersList.forEach((element) =>
       showChatParticipants(element.name, user.value)
