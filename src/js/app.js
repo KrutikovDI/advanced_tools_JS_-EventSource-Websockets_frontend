@@ -28,10 +28,6 @@ function showChatParticipants(participant, user) {
   }
 }
 
-
-//Проверяем никнейм пользователя при регистрации, если такого нет, то связываем полученный при входе на страницу id и имя пользователя.
-//Отправляем в ws имя и id на сервер.
-//И закрываем поле регистрации
 const apiURL = "http://localhost:6060/";
 registrationButton.addEventListener("click", async (e) => {
   e.preventDefault();
@@ -52,9 +48,62 @@ registrationButton.addEventListener("click", async (e) => {
     return;
   }
   console.log('вы прошли регистрацию');
-  ws.send(JSON.stringify({ registration: {name: user.value, id: userId} }))
   userNick = user.value;
   showChatField();
+
+  const ws = new WebSocket('ws://localhost:6060/ws');
+
+  btnMessage.addEventListener("click", (e) => {
+    e.preventDefault();
+    const textMessage = message.value;
+    ws.send(JSON.stringify({ chatMessage: { name: userNick, text: textMessage } }));
+    message.value = "";
+  });
+  
+  ws.addEventListener("open", (e) => {
+    ws.send(JSON.stringify({ userName: userNick }));
+    console.log(e);
+    console.log("ws open");
+  });
+  
+  ws.addEventListener("close", (e) => {
+    console.log(e);
+    console.log("ws close");
+  });
+  
+  ws.addEventListener("error", (e) => {
+    console.log(e);
+    console.log("ws error");
+  });
+  
+  ws.addEventListener("message", (e) => {
+    const parseData = JSON.parse(e.data);
+    console.log(parseData);
+    
+    if (parseData.usersList) {
+      const user = document.querySelector(".registration-input");
+      chatParticipants.innerHTML = "";
+      parseData.usersList.forEach((element) =>
+        showChatParticipants(element.name, user.value)
+      );
+  
+    } else if (parseData.chatMessage) {
+      console.log(parseData.chatMessage);
+      if (parseData.chatMessage.name == userNick) {
+        chat.insertAdjacentHTML(
+          "beforeend",
+          `<div class="chat-conteiner you"><div class="information"><div class="nick">You, ${parseData.chatMessage.date}</div></div><span class="text">${parseData.chatMessage.text}</span></div>`
+        );
+      } else {
+        chat.insertAdjacentHTML(
+          "beforeend",
+          `<div class="chat-conteiner"><div class="information"><div class="nick">${parseData.chatMessage.mane}, ${parseData.chatMessage.date}</div></div><span class="text">${parseData.chatMessage.text}</span></div>`
+        );
+      }
+    }
+    console.log("ws message");
+  });
+
 });
 
 // const eventSource = new EventSource(apiURL + "sse/");
@@ -80,60 +129,3 @@ registrationButton.addEventListener("click", async (e) => {
 //   );
 //   console.log("sse message");
 // });
-
-const ws = new WebSocket('ws://localhost:6060/ws');
-
-btnMessage.addEventListener("click", (e) => {
-  e.preventDefault();
-  const textMessage = message.value;
-  ws.send(JSON.stringify({ chatMessage: { name: userNick, text: textMessage } }));
-  message.value = "";
-});
-
-ws.addEventListener("open", (e) => {
-  console.log(e);
-  console.log("ws open");
-});
-
-ws.addEventListener("close", (e) => {
-  console.log(e);
-  console.log("ws close");
-});
-
-ws.addEventListener("error", (e) => {
-  console.log(e);
-  console.log("ws error");
-});
-
-//Как только сервер получлит связанные данные о новом пользователе, он добавляет его в БД и вышлит ВСЕМ обновленный список usresList
-//Этот список уходит в поле, где указаны все участники чата
-/*НО ПОЧЕМУ-ТО ЭТОТ ПОЛЬЗОВАТЕЛЬ, КОТОРЫЙ ВХОДИТ В ЧАТ, НЕ ПОЛУЧАЕТ СООБЩЕНИЕ ОТ WS, А ДРУГИЕ УЧАСТНИКИ ПОЛУЧАЮТ*/
-ws.addEventListener("message", (e) => {
-  const parseData = JSON.parse(e.data);
-  console.log(parseData);
-  
-  if (parseData.usersList) {
-    const user = document.querySelector(".registration-input");
-    chatParticipants.innerHTML = "";
-    parseData.usersList.forEach((element) =>
-      showChatParticipants(element.name, user.value)
-    );
-
-  } else if (parseData.chatMessage) {
-    console.log(parseData.chatMessage);
-    if (parseData.chatMessage.name == userNick) {
-      chat.insertAdjacentHTML(
-        "beforeend",
-        `<div class="chat-conteiner you"><div class="information"><div class="nick">You, ${parseData.chatMessage.date}</div></div><span class="text">${parseData.chatMessage.text}</span></div>`
-      );
-    } else {
-      chat.insertAdjacentHTML(
-        "beforeend",
-        `<div class="chat-conteiner"><div class="information"><div class="nick">${parseData.chatMessage.mane}, ${parseData.chatMessage.date}</div></div><span class="text">${parseData.chatMessage.text}</span></div>`
-      );
-    }
-  }
-
-
-  console.log("ws message");
-});
