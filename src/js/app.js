@@ -28,7 +28,7 @@ function showChatParticipants(participant, user) {
   }
 }
 
-const apiURL = "http://localhost:6060/";
+const apiURL = "https://advanced-tools-js-eventsource-websockets.onrender.com";
 registrationButton.addEventListener("click", async (e) => {
   e.preventDefault();
   const user = document.querySelector(".registration-input");
@@ -51,7 +51,7 @@ registrationButton.addEventListener("click", async (e) => {
   userNick = user.value;
   showChatField();
 
-  const ws = new WebSocket('ws://localhost:6060/ws');
+  const ws = new WebSocket('https://advanced-tools-js-eventsource-websockets.onrender.com/ws');
 
   btnMessage.addEventListener("click", (e) => {
     e.preventDefault();
